@@ -1,7 +1,7 @@
 import { Entity } from "./entity"
 import { Component } from "./component"
 
-import { Option, of } from "../option"
+import { Option } from "lazy-space"
 
 export interface Storage<A extends Component> {
 
@@ -15,21 +15,21 @@ export class SparseStorage<A extends Component> implements Storage<A> {
 
     private readonly data: Map<Entity, A> = new Map()
 
-    set(id: Entity, component: A): Storage<A> {
+    public set(id: Entity, component: A): Storage<A> {
         this.data.set(id, component)
         return this
     }
 
-    remove(id: Entity): Storage<A> {
+    public remove(id: Entity): Storage<A> {
         this.data.delete(id)
         return this
     }
 
-    get(id: Entity): Option<A> {
-        return of(this.data.get(id))
+    public get(id: Entity): Option<A> {
+        return Option.of(this.data.get(id))
     }
 
-    has(id: Entity): boolean {
+    public has(id: Entity): boolean {
         return this.data.has(id)
     }
 }
@@ -38,21 +38,21 @@ export class DenseStorage<A extends Component> implements Storage<A> {
 
     private readonly data: (A | undefined)[] = []
 
-    set(id: Entity, component: A): Storage<A> {
+    public set(id: Entity, component: A): Storage<A> {
         this.data[id] = component
         return this
     }
 
-    remove(id: Entity): Storage<A> {
+    public remove(id: Entity): Storage<A> {
         this.data[id] = undefined
         return this
     }
 
-    get(id: Entity): Option<A> {
-        return of(this.data[id])
+    public get(id: Entity): Option<A> {
+        return Option.of(this.data[id])
     }
 
-    has(id: Entity): boolean {
+    public has(id: Entity): boolean {
         return this.data[id] !== undefined
     }
 }

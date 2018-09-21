@@ -1,6 +1,6 @@
 import { World, DenseStorage } from "../../src/ecs"
 import { Vector } from "../../src/spatial"
-import { None } from "../../src/option"
+import { None } from "lazy-space"
 
 describe("World", () => {
 
@@ -22,7 +22,7 @@ describe("World", () => {
             const e1 = world.createEntity().withComponent("position", new Vector(0, 1)).entity
 
             const entity = world.fetchEntity(e1, "position").get(undefined)
-            const position = entity!.components["position"] as Vector
+            const position = entity!.components.position as Vector
             expect(position.key()).toEqual("0,1")
         })
 

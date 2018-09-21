@@ -1,5 +1,5 @@
 import { SparseStorage, DenseStorage, Storage } from "../../src/ecs"
-import { Some, None } from "../../src/option"
+import { Some, None } from "lazy-space"
 
 describe("SparseStorage", () => {
 
@@ -12,7 +12,7 @@ describe("DenseStorage", () => {
 })
 
 
-function storageTest(createStorage: () => Storage<{ id: number }>) {
+function storageTest(createStorage: () => Storage<{ id: number }>): void {
 
     let storage: Storage<{ id: number }>
     beforeEach(() => {

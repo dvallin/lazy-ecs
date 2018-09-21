@@ -3,8 +3,7 @@ import { System } from "./system"
 import { Component } from "./component"
 import { EntityModifier, Entity } from "./entity"
 
-import { Option, of, None, Some } from "../option"
-import { interval, Stream, iterator } from "../lazy/stream"
+import { Option, Stream, None, Some } from "lazy-space"
 
 export interface FetchedEntity {
     entity: Entity
@@ -13,29 +12,29 @@ export interface FetchedEntity {
 
 export class World {
 
-    components: Map<string, Storage<Component>> = new Map()
-    systems: Map<string, System> = new Map()
+    private components: Map<string, Storage<Component>> = new Map()
+    private systems: Map<string, System> = new Map()
 
-    openEntities: Set<Entity> = new Set()
-    lastEntity: Entity = -1
+    private openEntities: Set<Entity> = new Set()
+    private lastEntity: Entity = -1
 
-    registerComponent<A extends Component>(name: string, storage: Storage<A>): void {
+    public registerComponent<A extends Component>(name: string, storage: Storage<A>): void {
         this.components.set(name, storage)
     }
 
-    registerSystem(name: string, system: System): void {
+    public registerSystem(name: string, system: System): void {
         this.systems.set(name, system)
     }
 
-    getStorage<A extends Component>(name: string): Option<Storage<A>> {
-        return of(this.components.get(name) as Storage<A>)
+    public getStorage<A extends Component>(name: string): Option<Storage<A>> {
+        return Option.of(this.components.get(name) as Storage<A>)
     }
 
-    allStorages(): Stream<Storage<Component>> {
-        return iterator(this.components.values())
+    public allStorages(): Stream<Storage<Component>> {
+        return Stream.iterator(this.components.values())
     }
 
-    createEntity(): EntityModifier {
+    public createEntity(): EntityModifier {
         let entity
         if (this.openEntities.size > 0) {
             entity = this.openEntities.values().next().value
@@ -46,17 +45,17 @@ export class World {
         return new EntityModifier(this, entity)
     }
 
-    editEntity(entity: Entity): EntityModifier {
+    public editEntity(entity: Entity): EntityModifier {
         return new EntityModifier(this, entity)
     }
 
-    deleteEntity(entity: Entity): void {
+    public deleteEntity(entity: Entity): void {
         this.editEntity(entity).delete()
         this.openEntities.add(entity)
     }
 
-    fetchEntity(entity: Entity, ...storages: string[]): Option<FetchedEntity> {
-        let components: { [name: string]: Component } = {}
+    public fetchEntity(entity: Entity, ...storages: string[]): Option<FetchedEntity> {
+        const components: { [name: string]: Component } = {}
         for (const storage of storages) {
             const s = this.getStorage(storage).get(undefined)!
             const componentValue = s.get(entity).get(undefined)
@@ -68,11 +67,11 @@ export class World {
         return new Some({ entity, components })
     }
 
-    tick(): Stream<void> {
-        return interval(0, this.lastEntity)
+    public tick(): Stream<void> {
+        return Stream.interval(0, this.lastEntity)
             .filter(e => !this.openEntities.has(e))
             .flatMap(e => {
-                return iterator(this.systems.values()).map(system => {
+                return Stream.iterator(this.systems.values()).map(system => {
                     this.fetchEntity(e, ...system.components())
                         .map((entity) => system.process(e, entity.components))
                 })

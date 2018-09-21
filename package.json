@@ -2,7 +2,8 @@
     "name": "monads-ts",
     "version": "1.0.0",
     "description": "NOT TO BE PUBLISHED",
-    "main": "main.ts",
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts",
     "license": "MIT",
     "scripts": {
         "build": "tsc",
@@ -15,13 +16,16 @@
         "lint:test": "tslint -c tslint.json -p test/tsconfig.test.json test/**/*.{ts,js}",
         "lint": "npm-run-all --parallel lint:main lint:config lint:test"
     },
-    "dependencies": {},
+    "dependencies": {
+        "lazy-space": "^0.0.5"
+    },
     "devDependencies": {
         "@types/jest": "^23.3.2",
         "@types/node": "^10.10.1",
         "babel-jest": "^22.1.0",
         "jest": "^23.5.0",
         "jsverify": "^0.8.3",
+        "npm-run-all": "^4.1.3",
         "ts-jest": "^22.0.1",
         "ts-loader": "^4.4.2",
         "tslint": "^5.11.0",

@@ -17,11 +17,11 @@ describe("Single Component Systems", () => {
         const entities: Entity[] = []
         const positions: { [key: string]: Component }[] = []
         class SingleComponentSystem implements System {
-            components(): string[] {
+            public components(): string[] {
                 return ["position"]
             }
-            process(entity: Entity, components: { [key: string]: Component }) {
-                entities.push(entity)
+            public process(e: Entity, components: { [key: string]: Component }): void {
+                entities.push(e)
                 positions.push(components)
             }
         }
