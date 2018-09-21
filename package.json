@@ -1,7 +1,7 @@
 {
-    "name": "monads-ts",
-    "version": "1.0.0",
-    "description": "NOT TO BE PUBLISHED",
+    "name": "lazy-ecs",
+    "version": "0.0.1",
+    "description": "Lazy entity component system",
     "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
     "license": "MIT",
@@ -31,14 +31,5 @@
         "tslint": "^5.11.0",
         "typescript": "^3.0.1",
         "typescript-formatter": "^7.1.0"
-    },
-    "engines": {
-        "node": ">= 6.0.0",
-        "npm": ">= 3.0.0"
-    },
-    "browserslist": [
-        "> 1%",
-        "last 2 versions",
-        "not ie <= 8"
-    ]
+    }
 }
