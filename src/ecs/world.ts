@@ -1,19 +1,13 @@
 import { Storage } from "./storage"
-import { System } from "./system"
-import { Component } from "./component"
+import { Component, ComponentSource, EntityView } from "./component"
 import { EntityModifier, Entity } from "./entity"
 
 import { Option, Stream, None, Some } from "lazy-space"
 
-export interface FetchedEntity {
-    entity: Entity
-    components: { [name: string]: Component }
-}
-
 export class World {
 
     private components: Map<string, Storage<Component>> = new Map()
-    private systems: Map<string, System> = new Map()
+    private componentSources: Map<string, ComponentSource<{}>> = new Map()
 
     private openEntities: Set<Entity> = new Set()
     private lastEntity: Entity = -1
@@ -22,8 +16,8 @@ export class World {
         this.components.set(name, storage)
     }
 
-    public registerSystem(name: string, system: System): void {
-        this.systems.set(name, system)
+    public registerComponentSource<T>(source: ComponentSource<T>): void {
+        this.componentSources.set(source.name, source)
     }
 
     public getStorage<A extends Component>(name: string): Option<Storage<A>> {
@@ -54,7 +48,7 @@ export class World {
         this.openEntities.add(entity)
     }
 
-    public fetchEntity(entity: Entity, ...storages: string[]): Option<FetchedEntity> {
+    public fetchEntity(entity: Entity, ...storages: string[]): Option<EntityView> {
         const components: { [name: string]: Component } = {}
         for (const storage of storages) {
             const s = this.getStorage(storage).get(undefined)!
@@ -68,14 +62,17 @@ export class World {
     }
 
     public tick(): Stream<void> {
-        return Stream.interval(0, this.lastEntity)
+        return Stream
+            .interval(0, this.lastEntity)
             .filter(e => !this.openEntities.has(e))
-            .flatMap(e => {
-                return Stream.iterator(this.systems.values()).map(system => {
-                    this.fetchEntity(e, ...system.components())
-                        .map((entity) => system.process(e, entity.components))
-                })
-            })
+            .flatMap(e => Stream
+                .iterator(this.componentSources.values())
+                .flatMap(source => this
+                    .fetchEntity(e, ...source.components)
+                    .map(entity => source.push(entity))
+                    .get(Stream.just([]))
+                )
+            )
     }
 
 

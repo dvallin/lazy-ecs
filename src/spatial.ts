@@ -2,13 +2,14 @@ import { Lazy, Stream } from "lazy-space"
 
 export class Vector {
 
+    public key: () => string = Lazy.lazy(() => this.coordinates.join())
+
     private readonly coordinates: number[]
 
     public constructor(...coords: number[]) {
         this.coordinates = coords
     }
 
-    public key = Lazy.lazy(() => this.coordinates.join())
 }
 
 export interface Filter {

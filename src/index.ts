@@ -1,3 +1,4 @@
 import * as ecs from "./ecs"
 import * as spatial from "./spatial"
-export { ecs, spatial }
+import * as pipeline from "./pipeline"
+export { ecs, spatial, pipeline }

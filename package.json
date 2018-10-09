@@ -1,6 +1,6 @@
 {
     "name": "lazy-ecs",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Lazy entity component system",
     "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
@@ -17,7 +17,7 @@
         "lint": "npm-run-all --parallel lint:main lint:config lint:test"
     },
     "dependencies": {
-        "lazy-space": "^0.0.5"
+        "lazy-space": "^0.0.6"
     },
     "devDependencies": {
         "@types/jest": "^23.3.2",
