@@ -1,10 +1,13 @@
+import { Option, Stream, None, Some } from "lazy-space"
+
 import { Storage } from "./storage"
 import { Component, ComponentSource, EntityView } from "./component"
 import { EntityModifier, Entity } from "./entity"
+import { Push } from "../pipeline"
 
-import { Option, Stream, None, Some } from "lazy-space"
+type Tick = number
 
-export class World {
+export class World implements Push<Tick> {
 
     private components: Map<string, Storage<Component>> = new Map()
     private componentSources: Map<string, ComponentSource<{}>> = new Map()
@@ -61,7 +64,7 @@ export class World {
         return new Some({ entity, components })
     }
 
-    public tick(): Stream<void> {
+    public push(tick: Tick): Stream<void> {
         return Stream
             .interval(0, this.lastEntity)
             .filter(e => !this.openEntities.has(e))
@@ -74,7 +77,5 @@ export class World {
                 )
             )
     }
-
-
 }
 
