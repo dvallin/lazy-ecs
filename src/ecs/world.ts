@@ -1,13 +1,10 @@
-import { Option, Stream, None, Some } from "lazy-space"
-
 import { Storage } from "./storage"
 import { Component, ComponentSource, EntityView } from "./component"
 import { EntityModifier, Entity } from "./entity"
-import { Push } from "../pipeline"
 
-type Tick = number
+import { Option, Stream, None, Some, Eval, Empty } from "lazy-space"
 
-export class World implements Push<Tick> {
+export class World {
 
     private components: Map<string, Storage<Component>> = new Map()
     private componentSources: Map<string, ComponentSource<{}>> = new Map()
@@ -64,18 +61,23 @@ export class World implements Push<Tick> {
         return new Some({ entity, components })
     }
 
-    public push(tick: Tick): Stream<void> {
+    public fetchEntities(storages: string[]): Stream<EntityView> {
+        if (storages.length === 0) {
+            return new Empty()
+        }
+        return this.getStorage(storages[0])
+            .toStream()
+            .flatMap(s => s.entities())
+            .map(entity => this.fetchEntity(entity, ...storages))
+            .filter(e => e.isPresent())
+            .map(e => e.get(undefined)!)
+    }
+
+    public tick(): Stream<Eval<void>> {
         return Stream
-            .interval(0, this.lastEntity)
-            .filter(e => !this.openEntities.has(e))
-            .flatMap(e => Stream
-                .iterator(this.componentSources.values())
-                .flatMap(source => this
-                    .fetchEntity(e, ...source.components)
-                    .map(entity => source.push(entity))
-                    .get(Stream.just([]))
-                )
+            .iterator(this.componentSources.values())
+            .flatMap(source => this.fetchEntities(source.components)
+                .map(e => source.push(e))
             )
     }
 }
-

@@ -1,4 +1,4 @@
-import { Pipe } from "../pipeline/pipe"
+import { Pipe, Eval } from "lazy-space"
 import { Entity } from "./entity"
 
 export type Component = object
@@ -17,5 +17,5 @@ export abstract class ComponentSource<T> extends Pipe<EntityView, T> {
         super()
     }
 
-    protected abstract pass(entity: EntityView): T
+    protected abstract pass(entity: EntityView): Eval<T>
 }

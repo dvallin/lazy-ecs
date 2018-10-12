@@ -1,4 +1,4 @@
-import { SparseStorage, DenseStorage, Storage } from "../../src/ecs"
+import { SparseStorage, DenseStorage, Storage } from "../../src"
 import { Some, None } from "lazy-space"
 
 describe("SparseStorage", () => {

@@ -1,5 +1,4 @@
-import { World, DenseStorage } from "../../src/ecs"
-import { Vector } from "../../src/spatial"
+import { World, DenseStorage, Vector } from "../../src"
 import { None } from "lazy-space"
 
 describe("World", () => {

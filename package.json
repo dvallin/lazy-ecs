@@ -17,7 +17,7 @@
         "lint": "npm-run-all --parallel lint:main lint:config lint:test"
     },
     "dependencies": {
-        "lazy-space": "^0.0.6"
+        "lazy-space": "^0.0.9"
     },
     "devDependencies": {
         "@types/jest": "^23.3.2",
