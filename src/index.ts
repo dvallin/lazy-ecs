@@ -1,4 +1,3 @@
-import * as ecs from "./ecs"
-import * as spatial from "./spatial"
-import * as pipeline from "./pipeline"
-export { ecs, spatial, pipeline }
+export * from "./ecs"
+export * from "./spatial"
+export * from "./pipeline"

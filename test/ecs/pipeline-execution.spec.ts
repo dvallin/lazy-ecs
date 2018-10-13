@@ -1,60 +1,60 @@
-import { World, Entity, ComponentSource, DenseStorage, SparseStorage, EntityView } from "../../src/ecs"
-import { Vector } from "../../src/spatial"
-import { Merge, Push } from "../../src/pipeline"
-import { Failure, Success, Try, Stream } from "lazy-space"
+import { World, Vector, Entity, ComponentSource, DenseStorage, SparseStorage, EntityView } from "../../src"
+import { Merge, Push, Eval, TryEval, Option, Stream } from "lazy-space"
+
+type Components = "position" | "active" | "room"
 
 type ActivePositionView = Vector
-class ActivePosition extends ComponentSource<ActivePositionView> {
+class ActivePosition extends ComponentSource<Components, ActivePositionView> {
 
     public constructor() {
         super(["position", "active"], "activePosition")
     }
 
-    public pass(e: EntityView): ActivePositionView {
-        return e.components.position as ActivePositionView
+    public pass(e: EntityView): Eval<ActivePositionView> {
+        return new TryEval(() => e.components.position as Vector)
     }
 }
 
 type AllPositionView = EntityView
-class AllPositions extends ComponentSource<AllPositionView> {
+class AllPositions extends ComponentSource<Components, AllPositionView> {
 
     public constructor() {
         super(["position"], "allPositions")
     }
 
-    public pass(e: EntityView): AllPositionView {
-        return e
+    public pass(e: EntityView): Eval<AllPositionView> {
+        return new TryEval(() => e)
     }
 }
 
 type AllRoomsView = EntityView
-class AllRooms extends ComponentSource<AllRoomsView> {
+class AllRooms extends ComponentSource<Components, AllRoomsView> {
 
     public constructor() {
         super(["room"], "allRooms")
     }
 
-    public pass(e: EntityView): AllRoomsView {
-        return e
+    public pass(e: EntityView): Eval<AllRoomsView> {
+        return new TryEval(() => e)
     }
 }
 
 type ActiveRoomView = EntityView
 class ActiveRoom extends Merge<ActivePositionView, AllRoomsView, ActiveRoomView> {
 
-    public merge(): Try<ActiveRoomView> {
+    public merge(): Option<Eval<ActiveRoomView>> {
         return this.left.flatMap(l => this.right
             .filter(r => {
                 const roomPosition = r.components.room as Vector
                 return l.key() === roomPosition.key()
             })
-            .map(r => new Success<ActiveRoomView, Error>(r))
-        ).orElse(() => new Failure(new Error()))
+            .map(e => new TryEval(() => e))
+        )
     }
 }
 
 describe("Pipeline Execution", () => {
-    let world: World
+    let world: World<Components>
     let inactive: Entity
     let active: Entity
     let room: Entity
@@ -133,8 +133,9 @@ describe("Pipeline Execution", () => {
 
     function logger<S, T>(f: (i: S) => T): Push<S> {
         return {
-            push(p: S): Stream<void> {
-                return Stream.of([() => logFn(f(p))])
+            push(p: S): Eval<void> {
+                logFn(f(p))
+                return Eval.noop()
             }
         }
     }

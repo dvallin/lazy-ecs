@@ -2,25 +2,25 @@ import { Storage } from "./storage"
 import { Component, ComponentSource, EntityView } from "./component"
 import { EntityModifier, Entity } from "./entity"
 
-import { Option, Stream, None, Some } from "lazy-space"
+import { Option, Stream, None, Some, Eval, Empty } from "lazy-space"
 
-export class World {
+export class World<C extends string> {
 
-    private components: Map<string, Storage<Component>> = new Map()
-    private componentSources: Map<string, ComponentSource<{}>> = new Map()
+    private components: Map<C, Storage<Component>> = new Map()
+    private componentSources: Map<string, ComponentSource<C, {}>> = new Map()
 
     private openEntities: Set<Entity> = new Set()
     private lastEntity: Entity = -1
 
-    public registerComponent<A extends Component>(name: string, storage: Storage<A>): void {
+    public registerComponent<A extends Component>(name: C, storage: Storage<A>): void {
         this.components.set(name, storage)
     }
 
-    public registerComponentSource<T>(source: ComponentSource<T>): void {
+    public registerComponentSource<T>(source: ComponentSource<C, T>): void {
         this.componentSources.set(source.name, source)
     }
 
-    public getStorage<A extends Component>(name: string): Option<Storage<A>> {
+    public getStorage<A extends Component>(name: C): Option<Storage<A>> {
         return Option.of(this.components.get(name) as Storage<A>)
     }
 
@@ -28,7 +28,7 @@ export class World {
         return Stream.iterator(this.components.values())
     }
 
-    public createEntity(): EntityModifier {
+    public createEntity(): EntityModifier<C> {
         let entity
         if (this.openEntities.size > 0) {
             entity = this.openEntities.values().next().value
@@ -39,7 +39,7 @@ export class World {
         return new EntityModifier(this, entity)
     }
 
-    public editEntity(entity: Entity): EntityModifier {
+    public editEntity(entity: Entity): EntityModifier<C> {
         return new EntityModifier(this, entity)
     }
 
@@ -48,7 +48,7 @@ export class World {
         this.openEntities.add(entity)
     }
 
-    public fetchEntity(entity: Entity, ...storages: string[]): Option<EntityView> {
+    public fetchEntity(entity: Entity, ...storages: C[]): Option<EntityView> {
         const components: { [name: string]: Component } = {}
         for (const storage of storages) {
             const s = this.getStorage(storage).get(undefined)!
@@ -61,20 +61,23 @@ export class World {
         return new Some({ entity, components })
     }
 
-    public tick(): Stream<void> {
-        return Stream
-            .interval(0, this.lastEntity)
-            .filter(e => !this.openEntities.has(e))
-            .flatMap(e => Stream
-                .iterator(this.componentSources.values())
-                .flatMap(source => this
-                    .fetchEntity(e, ...source.components)
-                    .map(entity => source.push(entity))
-                    .get(Stream.just([]))
-                )
-            )
+    public fetchEntities(storages: C[]): Stream<EntityView> {
+        if (storages.length === 0) {
+            return new Empty()
+        }
+        return this.getStorage(storages[0])
+            .toStream()
+            .flatMap(s => s.entities())
+            .map(entity => this.fetchEntity(entity, ...storages))
+            .filter(e => e.isPresent())
+            .map(e => e.get(undefined)!)
     }
 
-
+    public tick(): Stream<Eval<void>> {
+        return Stream
+            .iterator(this.componentSources.values())
+            .flatMap(source => this.fetchEntities(source.components)
+                .map(e => source.push(e))
+            )
+    }
 }
-

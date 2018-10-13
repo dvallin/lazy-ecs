@@ -1,7 +1,7 @@
 import { Entity } from "./entity"
 import { Component } from "./component"
 
-import { Option } from "lazy-space"
+import { Option, Stream } from "lazy-space"
 
 export interface Storage<A extends Component> {
 
@@ -9,6 +9,7 @@ export interface Storage<A extends Component> {
     remove(id: Entity): Storage<A>
     get(id: Entity): Option<A>
     has(id: Entity): boolean
+    entities(): Stream<Entity>
 }
 
 export class SparseStorage<A extends Component> implements Storage<A> {
@@ -32,6 +33,10 @@ export class SparseStorage<A extends Component> implements Storage<A> {
     public has(id: Entity): boolean {
         return this.data.has(id)
     }
+
+    public entities(): Stream<Entity> {
+        return Stream.iterator(this.data.keys())
+    }
 }
 
 export class DenseStorage<A extends Component> implements Storage<A> {
@@ -54,5 +59,9 @@ export class DenseStorage<A extends Component> implements Storage<A> {
 
     public has(id: Entity): boolean {
         return this.data[id] !== undefined
+    }
+
+    public entities(): Stream<Entity> {
+        return Stream.interval(0, this.data.length - 1).filter(id => this.has(id))
     }
 }

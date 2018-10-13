@@ -1,40 +1,20 @@
-import { Lazy, Stream } from "lazy-space"
+import { Vector } from "./vector"
 
-export class Vector {
-
-    public key: () => string = Lazy.lazy(() => this.coordinates.join())
-
-    private readonly coordinates: number[]
-
-    public constructor(...coords: number[]) {
-        this.coordinates = coords
-    }
-
-}
-
-export interface Filter {
-
-    label: string
-    name: string
-    id: string
-}
-
-export interface Space<A> {
-    get(pos: Vector): Stream<A>
+export interface StackedSpace<A> {
+    get(pos: Vector): A[]
     set(pos: Vector, objects: A[]): void
 
     add(pos: Vector, object: A): void
-    remove(pos: Vector, object: A): void
+    retain(pos: Vector, predicate: (a: A) => boolean): void
 }
 
-export class DiscreteSpace<A> implements Space<A> {
+export class DiscreteStackedSpace<A> implements StackedSpace<A> {
 
     private readonly objects: Map<string, A[]> = new Map()
 
-    public get(pos: Vector): Stream<A> {
+    public get(pos: Vector): A[] {
         const key = pos.key()
-        const objects = this.objects.get(key) || []
-        return Stream.just(objects)
+        return this.objects.get(key) || []
     }
 
     public set(pos: Vector, objects: A[]): void {
@@ -49,21 +29,21 @@ export class DiscreteSpace<A> implements Space<A> {
         this.objects.set(key, objects)
     }
 
-    public remove(pos: Vector, object: A): void {
+    public retain(pos: Vector, predicate: (a: A) => boolean): void {
         const key = pos.key()
         const objects = this.objects.get(key) || []
-        this.objects.set(key, objects.filter(o => o !== object))
+        this.objects.set(key, objects.filter(o => predicate(o)))
     }
 }
 
-export class SubSpace<A> implements Space<A> {
+export class SubStackedSpace<A> implements StackedSpace<A> {
 
     public constructor(
-        public readonly space: Space<A>,
+        public readonly space: StackedSpace<A>,
         public readonly transform: (pos: Vector) => Vector
     ) { }
 
-    public get(pos: Vector): Stream<A> {
+    public get(pos: Vector): A[] {
         return this.space.get(this.transform(pos))
     }
 
@@ -75,7 +55,7 @@ export class SubSpace<A> implements Space<A> {
         return this.space.add(this.transform(pos), object)
     }
 
-    public remove(pos: Vector, object: A): void {
-        return this.space.remove(this.transform(pos), object)
+    public retain(pos: Vector, predicate: (a: A) => boolean): void {
+        return this.space.retain(this.transform(pos), predicate)
     }
 }
