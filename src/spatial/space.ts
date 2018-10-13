@@ -1,4 +1,4 @@
-import { Vector } from "./Vector"
+import { Vector } from "./vector"
 import { Option } from "lazy-space"
 
 export interface Space<A> {

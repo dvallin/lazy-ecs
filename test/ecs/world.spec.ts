@@ -3,7 +3,7 @@ import { None } from "lazy-space"
 
 describe("World", () => {
 
-    let world: World
+    let world: World<"position">
     beforeEach(() => {
         world = new World()
     })

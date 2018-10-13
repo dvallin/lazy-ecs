@@ -8,10 +8,10 @@ export interface EntityView {
     components: { [name: string]: Component }
 }
 
-export abstract class ComponentSource<T> extends Pipe<EntityView, T> {
+export abstract class ComponentSource<C, T> extends Pipe<EntityView, T> {
 
     public constructor(
-        public readonly components: string[],
+        public readonly components: C[],
         public readonly name: string
     ) {
         super()

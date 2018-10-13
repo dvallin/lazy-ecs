@@ -1,8 +1,10 @@
 import { World, Vector, Entity, ComponentSource, DenseStorage, SparseStorage, EntityView } from "../../src"
 import { Merge, Push, Eval, TryEval, Option, Stream } from "lazy-space"
 
+type Components = "position" | "active" | "room"
+
 type ActivePositionView = Vector
-class ActivePosition extends ComponentSource<ActivePositionView> {
+class ActivePosition extends ComponentSource<Components, ActivePositionView> {
 
     public constructor() {
         super(["position", "active"], "activePosition")
@@ -14,7 +16,7 @@ class ActivePosition extends ComponentSource<ActivePositionView> {
 }
 
 type AllPositionView = EntityView
-class AllPositions extends ComponentSource<AllPositionView> {
+class AllPositions extends ComponentSource<Components, AllPositionView> {
 
     public constructor() {
         super(["position"], "allPositions")
@@ -26,7 +28,7 @@ class AllPositions extends ComponentSource<AllPositionView> {
 }
 
 type AllRoomsView = EntityView
-class AllRooms extends ComponentSource<AllRoomsView> {
+class AllRooms extends ComponentSource<Components, AllRoomsView> {
 
     public constructor() {
         super(["room"], "allRooms")
@@ -52,7 +54,7 @@ class ActiveRoom extends Merge<ActivePositionView, AllRoomsView, ActiveRoomView>
 }
 
 describe("Pipeline Execution", () => {
-    let world: World
+    let world: World<Components>
     let inactive: Entity
     let active: Entity
     let room: Entity

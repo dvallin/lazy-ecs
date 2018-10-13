@@ -1,5 +1,5 @@
 import { DiscreteSpace, SubSpace, Vector, DiscreteStackedSpace, SubStackedSpace } from "../../src"
-import { Some, None } from "lazy-space";
+import { Some, None } from "lazy-space"
 
 interface Tile {
     c: string

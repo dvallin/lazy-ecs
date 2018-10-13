@@ -1,4 +1,4 @@
-import { Vector } from "./Vector"
+import { Vector } from "./vector"
 
 export interface StackedSpace<A> {
     get(pos: Vector): A[]
